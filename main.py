@@ -39,11 +39,18 @@ for i, page in enumerate(pages):
             div.append(' ')
 
     for item in all_ads_hrefs:
+        href = item.get("href")
         item_text = item.text.replace(' ', '')
-        if "авто под заказ" in item_text.lower() or "в пути" in item_text.lower():
-            continue
-        item_href = "h" + item.get("href")[1:]
-        all_ads_dict[item_text] = item_href
+        clean_href = href.strip().lower()
+        if "/vladivostok/" in clean_href or "/ussuriisk/" in clean_href:  # Если в ссылке есть /vladivostok/ или /ussuriisk/, добавляем ее в словарь
+            # условие для проверки наличия "в пути" внутри div
+            div_tags = item.find_all('div', class_='css-1r7hfp1 ejipaoe0')
+            if div_tags and "в пути" and "под заказ" and "Япония" and "Китай" not in div_tags[0].text.lower():
+                continue
+            span_tags = item.find_all('span', class_='css-1488ad e162wx9x0')
+            if any(city.lower() in span.text.lower() for city in ["Уссурийск", "Владивосток"]):
+                item_href = "h" + item.get("href")[1:]
+                all_ads_dict[item_text] = item_href
 
 # записываем данные заголовков в json файл
 with open('all_ads_headers.json', 'w', encoding='utf-8') as f:
